@@ -997,9 +997,8 @@ const FAQ = {
     });
   }
 };
-
 // ==========================================================================
-// FORM VALIDATION & SUBMISSION
+// FORM VALIDATION & SUBMISSION (with EmailJS)
 // ==========================================================================
 
 const ContactForm = {
@@ -1009,6 +1008,9 @@ const ContactForm = {
     this.successMessage = document.getElementById('form-success');
 
     if (!this.form) return;
+
+    // ==> 1. Initialize EmailJS with your Public Key
+    emailjs.init('SxA0xnPCGJIEBi7Cw'); // 👈 Replace with your Public Key
 
     this.bindEvents();
   },
@@ -1038,7 +1040,7 @@ const ContactForm = {
     // Clear previous errors
     this.clearFieldError(field);
 
-    // Validation rules
+    // Validation rules (No changes needed here)
     switch (fieldName) {
       case 'name':
         if (!value) {
@@ -1120,12 +1122,17 @@ const ContactForm = {
     this.setLoadingState(true);
 
     try {
-      // Simulate form submission (replace with actual endpoint)
-      await this.simulateFormSubmission();
+      // ==> 2. Replace the simulation with the emailjs.sendForm method
+      await emailjs.sendForm(
+        'service_zq6bma1',  // 👈 Replace with your Service ID
+        'template_uau0tmg', // 👈 Replace with your Template ID
+        this.form
+      );
       
       this.showSuccess();
       this.form.reset();
     } catch (error) {
+      console.error('FAILED TO SEND EMAIL...', error);
       this.showError('Failed to send message. Please try again.');
     } finally {
       this.setLoadingState(false);
@@ -1178,14 +1185,7 @@ const ContactForm = {
     }, 5000);
   },
 
-  simulateFormSubmission() {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        // Simulate 95% success rate
-        Math.random() > 0.05 ? resolve() : reject();
-      }, 2000);
-    });
-  }
+  // ==> 3. The simulateFormSubmission() method is no longer needed and can be deleted.
 };
 
 // ==========================================================================
