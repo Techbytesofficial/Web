@@ -377,8 +377,13 @@ const Navigation = {
     },
     setupSmoothScrolling() {
         document.addEventListener('click', (e) => {
-            const link = e.target.closest('a[href^="#"]');
-            if (!link) return;
+        const link = e.target.closest('a[href^="#"]');
+        if (!link) return;
+
+        // Skip nav-menu links on mobile (handled separately)
+        if (window.innerWidth <= 768 && link.classList.contains('nav-link')) {
+            return;
+        }
             const targetId = link.getAttribute('href');
             if (targetId === '#') return;
             e.preventDefault();
@@ -420,12 +425,27 @@ const Navigation = {
             }
         });
         navLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                if (window.innerWidth <= 768) {
-                    closeMenu();
+        link.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768) {
+                e.preventDefault();
+                const targetId = link.getAttribute('href');
+                if (targetId && targetId.startsWith('#')) {
+                    const headerHeight = 80;
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+                        window.scrollTo({
+                            top: targetPosition,
+                            behavior: 'smooth'
+                        });
+                    }
                 }
-            });
+                // Close the menu *after* a short delay so scroll triggers first
+                setTimeout(() => closeMenu(), 300);
+            }
         });
+    });
+
         document.addEventListener('click', (e) => {
             if (window.innerWidth <= 768 && navMenu.classList.contains('active') && !navMenu.contains(e.target) && !mobileToggle.contains(e.target)) {
                 closeMenu();
