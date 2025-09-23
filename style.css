@@ -927,7 +927,6 @@ select.form-control {
     display: flex;
   }
 
-  @media (max-width: 768px) {
   .nav-menu {
     position: fixed;
     top: 0;
@@ -942,13 +941,14 @@ select.form-control {
     transition: transform var(--duration-normal) var(--ease-standard);
     z-index: 100;
     pointer-events: none; /* prevent blocking taps when hidden */
+    opacity: 0; /* fully invisible when hidden */
   }
 
   .nav-menu.active {
     transform: translateY(0); /* slide into view */
     pointer-events: auto;
+    opacity: 1;
   }
-}
 
   .nav-link {
     padding: var(--space-8);
@@ -956,6 +956,7 @@ select.form-control {
     text-align: center;
   }
 }
+
 
 /* ==========================================================================
    HERO SECTION
