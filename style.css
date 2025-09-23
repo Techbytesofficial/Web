@@ -2288,3 +2288,16 @@ select.form-control {
   opacity: 1;
   transform: scale(1.1);
 }
+
+/* ==========================================================================
+   MOBILE AOS FIX
+   ========================================================================== */
+
+/* This forces content with AOS attributes to be visible on mobile,
+   where the AOS JavaScript has been disabled. */
+@media (max-width: 768px) {
+  [data-aos] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
