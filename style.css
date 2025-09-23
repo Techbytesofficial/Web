@@ -2123,6 +2123,7 @@ select.form-control {
   }
 }
 
+/* --- THIS IS THE SINGLE, CORRECTED BLOCK --- */
 @media (max-width: 768px) {
   .content-section {
     padding: var(--space-24) 0;
@@ -2162,6 +2163,16 @@ select.form-control {
   .scroll-to-top {
     bottom: 90px;
     right: var(--space-16);
+  }
+
+  /* Your new performance rules are now here: */
+  .site-header {
+    backdrop-filter: none;
+    background: rgba(var(--color-slate-900-rgb), 0.95);
+  }
+
+  .animated-glow {
+    animation: none;
   }
 }
 

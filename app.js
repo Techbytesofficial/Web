@@ -1428,7 +1428,7 @@ class TechByteApp {
     this.modules = [
       LoadingScreen,
       ScrollProgress,
-      ThreeDBackground,
+      // ThreeDBackground is REMOVED from this initial list
       Navigation,
       ServicesManager,
       PortfolioManager,
@@ -1438,12 +1438,11 @@ class TechByteApp {
       ContactForm,
       ChatWidget,
       ScrollToTop,
-      LogoScroller, // <-- This line was added
+      LogoScroller,
       PerformanceMonitor,
       AccessibilityEnhancements
     ];
   }
-//... rest of the class
 
   init() {
     console.log('Initializing TechByte App...');
@@ -1455,21 +1454,37 @@ class TechByteApp {
         once: true,
         offset: 100,
         disable: function() {
-          // Disable animations on mobile for performance
           return window.innerWidth < 768;
         }
       });
     }
 
+    // --- CORRECTED LOGIC ---
+
+    // Conditionally add the 3D background module ONLY on desktop
+    if (window.innerWidth > 768) {
+      this.modules.push(ThreeDBackground);
+    } else {
+      // On mobile, just hide the canvas. No need to remove the module
+      // since it was never added to the list in the first place.
+      const canvas = document.getElementById('hero-canvas');
+      if (canvas) canvas.style.display = 'none';
+    }
+
+    // --- END CORRECTION ---
+
     // Initialize all modules
     this.modules.forEach(module => {
       try {
         if (module && typeof module.init === 'function') {
-          console.log(`Initializing ${module.constructor?.name || 'module'}...`);
+          // The module name is retrieved for logging, if available.
+          const moduleName = module.constructor ? module.constructor.name : 'module';
+          console.log(`Initializing ${moduleName}...`);
           module.init();
         }
       } catch (error) {
-        console.warn(`Failed to initialize ${module.constructor?.name || 'module'}:`, error);
+        const moduleName = module.constructor ? module.constructor.name : 'module';
+        console.warn(`Failed to initialize ${moduleName}:`, error);
       }
     });
 
