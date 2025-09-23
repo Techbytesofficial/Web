@@ -2314,12 +2314,29 @@ select.form-control {
 }
 
 /* -------------------------
-   Mobile Responsiveness Fixes
+   Responsive Fixes
 ------------------------- */
 
-/* Small screens: up to 768px */
-@media (max-width: 768px) {
+/* Tablets and below */
+@media (max-width: 1024px) {
+  .services-grid,
+  .portfolio-grid,
+  .team-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-16);
+  }
 
+  .hero-title {
+    font-size: 2.2rem;
+  }
+
+  .section-title {
+    font-size: 1.8rem;
+  }
+}
+
+/* Mobile: 768px and below */
+@media (max-width: 768px) {
   /* Navigation */
   .mobile-menu-toggle {
     display: flex;
@@ -2354,9 +2371,9 @@ select.form-control {
     text-align: center;
   }
 
-  /* Hero section */
+  /* Hero Section */
   .hero-title {
-    font-size: 1.8rem;   /* smaller font */
+    font-size: 1.8rem;
     line-height: 1.3;
   }
 
@@ -2369,7 +2386,7 @@ select.form-control {
     gap: var(--space-12);
   }
 
-  /* Grids collapse to 1-column */
+  /* Grids collapse */
   .services-grid,
   .portfolio-grid,
   .team-grid,
@@ -2391,7 +2408,7 @@ select.form-control {
   }
 }
 
-/* Extra small screens: up to 480px */
+/* Very small screens: 480px and below */
 @media (max-width: 480px) {
   .hero-title {
     font-size: 1.5rem;
@@ -2399,6 +2416,11 @@ select.form-control {
 
   .btn {
     width: 100%;
+    text-align: center;
+  }
+
+  .stat-item {
+    flex: 1 1 100%;
     text-align: center;
   }
 }
