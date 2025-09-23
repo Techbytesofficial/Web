@@ -377,16 +377,18 @@ const Navigation = {
     },
     setupSmoothScrolling() {
         document.addEventListener('click', (e) => {
-        const link = e.target.closest('a[href^="#"]');
-        if (!link) return;
+            const link = e.target.closest('a[href^="#"]');
+            if (!link) return;
 
-        // Skip nav-menu links on mobile (handled separately)
-        if (window.innerWidth <= 768 && link.classList.contains('nav-link')) {
-            return;
-        }
+            // Skip if it's a nav link on mobile (handled separately)
+            if (window.innerWidth <= 768 && link.classList.contains('nav-link')) {
+                return;
+            }
+            
             const targetId = link.getAttribute('href');
             if (targetId === '#') return;
             e.preventDefault();
+            
             const targetElementId = targetId.substring(1);
             const target = document.getElementById(targetElementId);
             if (target) {
@@ -403,57 +405,77 @@ const Navigation = {
         const mobileToggle = document.querySelector('.mobile-menu-toggle');
         const navMenu = document.getElementById('nav-menu');
         const navLinks = document.querySelectorAll('.nav-link');
+        
         if (!mobileToggle || !navMenu) return;
+
         const closeMenu = () => {
             navMenu.classList.remove('active');
             mobileToggle.setAttribute('aria-expanded', 'false');
             document.body.classList.remove('no-scroll');
-          };
+        };
 
-          const openMenu = () => {
+        const openMenu = () => {
             navMenu.classList.add('active');
             mobileToggle.setAttribute('aria-expanded', 'true');
             document.body.classList.add('no-scroll');
-          };
+        };
+
         mobileToggle.addEventListener('click', (e) => {
             e.preventDefault();
             const isExpanded = mobileToggle.getAttribute('aria-expanded') === 'true';
+            
             if (isExpanded) {
                 closeMenu();
             } else {
                 openMenu();
             }
         });
+
+        // Handle nav link clicks on mobile
         navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            if (window.innerWidth <= 768) {
-                e.preventDefault();
-                const targetId = link.getAttribute('href');
-                if (targetId && targetId.startsWith('#')) {
-                    const headerHeight = 80;
-                    const targetElement = document.querySelector(targetId);
-                    if (targetElement) {
-                        const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
-                        window.scrollTo({
-                            top: targetPosition,
-                            behavior: 'smooth'
-                        });
+            link.addEventListener('click', (e) => {
+                if (window.innerWidth <= 768) {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href');
+                    
+                    if (targetId && targetId.startsWith('#')) {
+                        const headerHeight = 80;
+                        const targetElement = document.querySelector(targetId);
+                        
+                        if (targetElement) {
+                            const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+                            window.scrollTo({
+                                top: targetPosition,
+                                behavior: 'smooth'
+                            });
+                        }
                     }
+                    
+                    // Close menu after scrolling
+                    setTimeout(() => closeMenu(), 300);
                 }
-                // Close the menu *after* a short delay so scroll triggers first
-                setTimeout(() => closeMenu(), 300);
+            });
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768 && 
+                navMenu.classList.contains('active') && 
+                !navMenu.contains(e.target) && 
+                !mobileToggle.contains(e.target)) {
+                closeMenu();
             }
         });
-    });
 
-        document.addEventListener('click', (e) => {
-            if (window.innerWidth <= 768 && navMenu.classList.contains('active') && !navMenu.contains(e.target) && !mobileToggle.contains(e.target)) {
+        // Close menu on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && navMenu.classList.contains('active')) {
                 closeMenu();
+                mobileToggle.focus();
             }
         });
     }
 };
-
 const ServicesManager = {
     init() { this.populateServices(); },
     getServiceIcon(iconType) { const icons = { code: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l-4 4-4-4M6 16l-4-4 4-4"></path>', mobile: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>', brain: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>', cloud: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>', design: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM7 3V1m0 20v-2m4-8h6a2 2 0 012 2v6a2 2 0 01-2 2h-6"></path>', transform: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>' }; return icons[iconType] || icons.code; },
