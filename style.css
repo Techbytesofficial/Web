@@ -927,9 +927,10 @@ select.form-control {
     display: flex;
   }
 
+  @media (max-width: 768px) {
   .nav-menu {
     position: fixed;
-    top: 100%;
+    top: 0;
     left: 0;
     right: 0;
     background: var(--color-surface);
@@ -937,14 +938,17 @@ select.form-control {
     flex-direction: column;
     padding: var(--space-24);
     gap: var(--space-16);
-    transform: translateY(-100vh);
+    transform: translateY(-100%); /* hidden above viewport */
     transition: transform var(--duration-normal) var(--ease-standard);
     z-index: 100;
+    pointer-events: none; /* prevent blocking taps when hidden */
   }
 
   .nav-menu.active {
-    transform: translateY(0);
+    transform: translateY(0); /* slide into view */
+    pointer-events: auto;
   }
+}
 
   .nav-link {
     padding: var(--space-8);
@@ -2300,4 +2304,8 @@ select.form-control {
     opacity: 1 !important;
     transform: none !important;
   }
+}
+
+.no-scroll {
+  overflow: hidden !important;
 }

@@ -402,13 +402,14 @@ const Navigation = {
         const closeMenu = () => {
             navMenu.classList.remove('active');
             mobileToggle.setAttribute('aria-expanded', 'false');
-            document.body.style.overflow = '';
-        };
-        const openMenu = () => {
+            document.body.classList.remove('no-scroll');
+          };
+
+          const openMenu = () => {
             navMenu.classList.add('active');
             mobileToggle.setAttribute('aria-expanded', 'true');
-            document.body.style.overflow = 'hidden';
-        };
+            document.body.classList.add('no-scroll');
+          };
         mobileToggle.addEventListener('click', (e) => {
             e.preventDefault();
             const isExpanded = mobileToggle.getAttribute('aria-expanded') === 'true';
