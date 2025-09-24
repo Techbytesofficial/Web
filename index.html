@@ -7,9 +7,126 @@
     <meta name="keywords" content="web development, AI solutions, mobile apps, cloud solutions, UI/UX design, digital transformation">
     <meta name="author" content="TechByte">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    
+
     <title>TechByte - Innovating Tomorrow's Technology</title>
-    
+
+    <!-- Resource Hints -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://unpkg.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="preload" href="style.css" as="style">
+
+    <!-- Critical CSS -->
+    <style>
+        /* Base Styles */
+        :root {
+            --color-background: rgba(252, 252, 249, 1);
+            --color-text: rgba(19, 52, 59, 1);
+            --color-text-secondary: rgba(98, 108, 113, 1);
+            --color-primary: rgba(33, 128, 141, 1);
+            --space-4: 0.25rem;
+            --space-16: 1rem;
+            --space-24: 1.5rem;
+            --space-32: 2rem;
+            --font-size-sm: 0.875rem;
+            --font-size-xl: 1.25rem;
+            --font-size-3xl: 1.875rem;
+            --font-size-4xl: 2.25rem;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+            --line-height-tight: 1.25;
+            --line-height-normal: 1.5;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: var(--space-32) var(--space-24);
+        }
+
+        .hero-title {
+            font-size: clamp(var(--font-size-4xl), 8vw, 5rem);
+            font-weight: var(--font-weight-bold);
+            line-height: var(--line-height-tight);
+            margin-bottom: var(--space-24);
+        }
+
+        .hero-subtitle {
+            font-size: var(--font-size-xl);
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-32);
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Navigation */
+        .nav-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background-color: rgba(252, 252, 249, 0.9);
+            backdrop-filter: blur(8px);
+            padding: 1rem;
+        }
+
+        .nav-menu {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .nav-menu {
+                padding: 0.5rem;
+            }
+            .hero-section {
+                padding: var(--space-16);
+            }
+            .hero-title {
+                font-size: 2rem;
+            }
+            .hero-subtitle {
+                font-size: var(--font-size-sm);
+            }
+        }
+    </style>
+
+    <!-- PWA Manifest & Meta -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1a365d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TechByte">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+
+    <!-- Deferred CSS loading -->
+    <link rel="preload" href="style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="style.css"></noscript>
+
+    <!-- External Resources -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -18,7 +135,7 @@
     <script type="text/javascript"
         src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
     </script>
-    
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -52,7 +169,7 @@
                 <span class="hamburger-line"></span>
             </button>
             
-            <div class="nav-menu" id="nav-menu">
+            <div class="nav-menu" id="nav-menu" role="menu">
                 <a href="#about" class="nav-link">About</a>
                 <a href="#services" class="nav-link">Services</a>
                 <a href="#portfolio" class="nav-link">Portfolio</a>
@@ -246,6 +363,9 @@
                     <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">
                         Ready to transform your business with cutting-edge technology? Get in touch and let's discuss your next project.
                     </p>
+                    <button class="btn btn-primary" data-modal="contact-modal" data-aos="fade-up" data-aos-delay="200">
+                        Quick Contact
+                    </button>
                 </header>
                 
                 <div class="contact-content">
@@ -329,20 +449,20 @@
                 </header>
                 <div class="scroller" data-aos="fade-up">
                     <ul class="scroller__inner">
-                        <li><img src="images\1703573144.jpeg" alt="Partner 1"></li>
-                        <li><img src="images\Gulbarga_University_logo.png" alt="Partner 2"></li>
-                        <li><img src="images\images (1).jpg" alt="Partner 3"></li>
-                        <li><img src="images\logo.png" alt="Partner 4"></li>
-                        <li><img src="images\Sharnbasva_University_logo.png" alt="Partner 5"></li>
-                        <li><img src="images\Untitled_design__19_-removebg-preview.png" alt="Partner 6"></li>
-                        <li><img src="images\vgclogo.png" alt="Partner 7"></li>
-                        <li><img src="images\1703573144.jpeg" alt="Partner 1"></li>
-                        <li><img src="images\Gulbarga_University_logo.png" alt="Partner 2"></li>
-                        <li><img src="images\images (1).jpg" alt="Partner 3"></li>
-                        <li><img src="images\logo.png" alt="Partner 4"></li>
-                        <li><img src="images\Sharnbasva_University_logo.png" alt="Partner 5"></li>
-                        <li><img src="images\Untitled_design__19_-removebg-preview.png" alt="Partner 6"></li>
-                        <li><img src="images\vgclogo.png" alt="Partner 7"></li>
+                        <li><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" data-src="images\1703573144.jpeg" alt="Partner 1" loading="lazy" class="lazy"></li>
+                        <li><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" data-src="images\Gulbarga_University_logo.png" alt="Partner 2" loading="lazy" class="lazy"></li>
+                        <li><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" data-src="images\images (1).jpg" alt="Partner 3" loading="lazy" class="lazy"></li>
+                        <li><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" data-src="images\logo.png" alt="Partner 4" loading="lazy" class="lazy"></li>
+                        <li><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" data-src="images\Sharnbasva_University_logo.png" alt="Partner 5" loading="lazy" class="lazy"></li>
+                        <li><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" data-src="images\Untitled_design__19_-removebg-preview.png" alt="Partner 6" loading="lazy" class="lazy"></li>
+                        <li><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" data-src="images\vgclogo.png" alt="Partner 7" loading="lazy" class="lazy"></li>
+                        <li><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" data-src="images\1703573144.jpeg" alt="Partner 1" loading="lazy" class="lazy"></li>
+                        <li><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" data-src="images\Gulbarga_University_logo.png" alt="Partner 2" loading="lazy" class="lazy"></li>
+                        <li><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" data-src="images\images (1).jpg" alt="Partner 3" loading="lazy" class="lazy"></li>
+                        <li><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" data-src="images\logo.png" alt="Partner 4" loading="lazy" class="lazy"></li>
+                        <li><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" data-src="images\Sharnbasva_University_logo.png" alt="Partner 5" loading="lazy" class="lazy"></li>
+                        <li><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" data-src="images\Untitled_design__19_-removebg-preview.png" alt="Partner 6" loading="lazy" class="lazy"></li>
+                        <li><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" data-src="images\vgclogo.png" alt="Partner 7" loading="lazy" class="lazy"></li>
                     </ul>
                 </div>
             </div>
@@ -421,9 +541,22 @@
     </button>
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="app.js" defer></script>
-
-
+    <script defer src="app.js"></script>
+    
+    <!-- Mobile Modal Templates -->
+    <div id="contact-modal" class="modal-overlay modal-mobile" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="modal-header modal-header-mobile">
+            <div class="modal-swipe-indicator"></div>
+            <button class="modal-close" aria-label="Close">×</button>
+        </div>
+        <div class="modal-content modal-content-mobile">
+            <!-- Add your modal content here -->
+            <h2>Contact Us</h2>
+            <p>Get in touch with our team to discuss your project requirements.</p>
+            <!-- Modal-specific form or content -->
+        </div>
+    </div>
+    
   <noscript><p style="text-align:center;color:red;">This site works best with JavaScript enabled.</p></noscript>
 </body>
 </html>

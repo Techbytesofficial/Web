@@ -1,21 +1,172 @@
 /**
- * TECHBYTE PORTFOLIO - MAIN APPLICATION SCRIPT
+ * TECHBYTE PORTFOLIO - MAIN APPLICATION SCRIPT (Corrected & Refactored)
  * Professional portfolio website with advanced interactions
  * Author: TechByte Development Team
- * Version: 2.1.0 (Final)
+ * Version: 2.2.0 (Refactored)
  */
 
 'use strict';
 
 // ==========================================================================
+// PWA Features
+// ==========================================================================
+const ServiceWorkerManager = {
+    register() {
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(reg => console.log('ServiceWorker registered:', reg.scope))
+                    .catch(err => console.error('ServiceWorker registration failed:', err));
+            });
+        }
+    }
+};
+
+const PWAInstallManager = {
+    deferredPrompt: null,
+    buttonSelector: '.cta-button',
+    init() {
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            this.deferredPrompt = e;
+            const btn = document.querySelector(this.buttonSelector);
+            if (btn) {
+                btn.addEventListener('click', () => this.showInstallPrompt(), { once: true });
+            }
+        });
+        window.addEventListener('appinstalled', () => {
+            this.deferredPrompt = null;
+            console.log('PWA installed successfully');
+        });
+    },
+    async showInstallPrompt() {
+        if (!this.deferredPrompt) return;
+        this.deferredPrompt.prompt();
+        const { outcome } = await this.deferredPrompt.userChoice;
+        console.log(`Installation ${outcome}`);
+        this.deferredPrompt = null;
+    }
+};
+
+// ==========================================================================
+// Haptic Feedback Manager
+// ==========================================================================
+const HapticFeedbackManager = (() => {
+    const VIBRATION_PATTERNS = {
+        light: [10],
+        medium: [25],
+        strong: [50],
+        swipe: [10, 30, 10],
+        refresh: [20, 40, 20, 40],
+        error: [10, 50, 10],
+        success: [20]
+    };
+    let isEnabled = true;
+
+    function init() {
+        isEnabled = 'vibrate' in navigator && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+
+    function vibrate(pattern) {
+        if (!isEnabled || !pattern) return;
+        try {
+            navigator.vibrate(VIBRATION_PATTERNS[pattern] || pattern);
+        } catch (error) {
+            console.warn('Haptic feedback failed:', error);
+        }
+    }
+    return {
+        init,
+        lightTap: () => vibrate('light'),
+        mediumTap: () => vibrate('medium'),
+        strongTap: () => vibrate('strong'),
+        swipeGesture: () => vibrate('swipe'),
+        refreshComplete: () => vibrate('refresh'),
+        errorTap: () => vibrate('error'),
+        successTap: () => vibrate('success')
+    };
+})();
+
+// ==========================================================================
+// Pull-to-Refresh Manager
+// ==========================================================================
+const PullToRefreshManager = {
+    THRESHOLD: 150,
+    MAX_PULL: 200,
+    startY: 0,
+    currentY: 0,
+    refreshing: false,
+    pullStarted: false,
+    thresholdHapticFired: false,
+
+    init() {
+        const container = document.documentElement;
+        container.addEventListener('touchstart', this.onTouchStart.bind(this), { passive: true });
+        container.addEventListener('touchmove', this.onTouchMove.bind(this), { passive: false });
+        container.addEventListener('touchend', this.onTouchEnd.bind(this), { passive: true });
+    },
+    onTouchStart(e) {
+        if (window.scrollY === 0 && !this.refreshing) {
+            this.startY = e.touches[0].clientY;
+            this.pullStarted = true;
+            this.thresholdHapticFired = false;
+        }
+    },
+    onTouchMove(e) {
+        if (!this.pullStarted) return;
+        this.currentY = e.touches[0].clientY;
+        const pullDistance = this.currentY - this.startY;
+        if (pullDistance > 0 && window.scrollY === 0) {
+            e.preventDefault();
+            this.updatePullIndicator(Math.min(pullDistance, this.MAX_PULL));
+        }
+    },
+    onTouchEnd() {
+        if (!this.pullStarted) return;
+        this.pullStarted = false;
+        const pullDistance = this.currentY - this.startY;
+        if (pullDistance >= this.THRESHOLD && !this.refreshing) {
+            this.refresh();
+        } else {
+            this.resetPullIndicator();
+        }
+    },
+    updatePullIndicator(distance) {
+        document.documentElement.style.setProperty('--pull-distance', `${distance}px`);
+        const progress = (distance / this.THRESHOLD) * 100;
+        document.documentElement.style.setProperty('--pull-progress', `${progress}%`);
+        if (distance >= this.THRESHOLD && !this.thresholdHapticFired) {
+            HapticFeedbackManager.mediumTap();
+            this.thresholdHapticFired = true;
+        }
+    },
+    resetPullIndicator() {
+        document.documentElement.style.setProperty('--pull-distance', '0px');
+        document.documentElement.style.setProperty('--pull-progress', '0%');
+        this.thresholdHapticFired = false;
+    },
+    async refresh() {
+        this.refreshing = true;
+        document.documentElement.classList.add('refreshing');
+        HapticFeedbackManager.refreshComplete();
+        try {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            location.reload();
+        } finally {
+            this.refreshing = false;
+            document.documentElement.classList.remove('refreshing');
+            this.resetPullIndicator();
+        }
+    }
+};
+
+// ==========================================================================
 // APPLICATION DATA
 // ==========================================================================
-
 const APP_DATA = {
     company: {
         name: "TechByte",
         tagline: "Innovating Tomorrow's Technology",
-        description: "We are a leading digital innovation company specializing in cutting-edge web development, AI solutions, and digital transformation. Our team of experts combines technical excellence with creative vision to deliver solutions that drive business growth.",
         stats: {
             projectsCompleted: "20+",
             clientsSatisfied: "50+",
@@ -476,14 +627,122 @@ const Navigation = {
         });
     }
 };
+
 const ServicesManager = {
     init() { this.populateServices(); },
     getServiceIcon(iconType) { const icons = { code: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l-4 4-4-4M6 16l-4-4 4-4"></path>', mobile: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>', brain: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>', cloud: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>', design: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM7 3V1m0 20v-2m4-8h6a2 2 0 012 2v6a2 2 0 01-2 2h-6"></path>', transform: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>' }; return icons[iconType] || icons.code; },
     populateServices() { const servicesGrid = document.getElementById('services-grid'); if (!servicesGrid) return; servicesGrid.innerHTML = APP_DATA.services.map((service, index) => `<article class="service-card" data-aos="fade-up" data-aos-delay="${100 * (index + 1)}"><div class="service-icon"><svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">${this.getServiceIcon(service.icon)}</svg></div><h3 class="service-title">${service.title}</h3><p class="service-description">${service.description}</p><div class="service-technologies">${service.technologies.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}</div></article>`).join(''); }
 };
 
+const PortfolioSwipeManager = (() => {
+    const SWIPE_THRESHOLD = 50;
+    const MAX_SWIPE_TIME = 300; // Increased for better UX
+    let swipeStartX = 0;
+    let swipeStartY = 0;
+    let swipeStartTime = 0;
+    let currentIndex = 0;
+    let portfolioContainer = null;
+    let indicators = null;
+
+    function init() {
+        if (!window.matchMedia('(max-width: 768px)').matches) return;
+        portfolioContainer = document.getElementById('portfolio-grid');
+        if (!portfolioContainer) return;
+
+        portfolioContainer.classList.add('portfolio-swipe-container');
+        createIndicators();
+        
+        portfolioContainer.addEventListener('touchstart', onTouchStart, { passive: true });
+        portfolioContainer.addEventListener('touchmove', onTouchMove, { passive: true });
+        portfolioContainer.addEventListener('touchend', onTouchEnd, { passive: true });
+        portfolioContainer.addEventListener('scroll', Utils.throttle(updateIndicators, 100), { passive: true });
+        if ('onscrollend' in window) {
+            portfolioContainer.addEventListener('scrollend', updateIndicators);
+        }
+    }
+
+    function createIndicators() {
+        const totalProjects = APP_DATA.projects.length;
+        indicators = document.createElement('div');
+        indicators.className = 'portfolio-indicators';
+        for (let i = 0; i < totalProjects; i++) {
+            const dot = document.createElement('button');
+            dot.className = 'portfolio-indicator' + (i === 0 ? ' active' : '');
+            dot.setAttribute('aria-label', `Go to project ${i + 1}`);
+            indicators.appendChild(dot);
+        }
+        portfolioContainer.parentNode.insertBefore(indicators, portfolioContainer.nextSibling);
+    }
+
+    function onTouchStart(e) {
+        swipeStartX = e.touches[0].clientX;
+        swipeStartY = e.touches[0].clientY;
+        swipeStartTime = Date.now();
+        HapticFeedbackManager.lightTap();
+    }
+
+    function onTouchMove(e) {
+        if (!swipeStartX) return;
+        const deltaX = e.touches[0].clientX - swipeStartX;
+        const deltaY = e.touches[0].clientY - swipeStartY;
+        if (Math.abs(deltaY) > Math.abs(deltaX)) {
+            portfolioContainer.style.transform = '';
+            swipeStartX = 0;
+            return;
+        }
+        const edgeResistance = isAtEdge() ? 0.2 : 1;
+        portfolioContainer.style.transform = `translateX(${deltaX * edgeResistance}px)`;
+    }
+
+    function onTouchEnd(e) {
+        if (!swipeStartX) return;
+        const swipeEndX = e.changedTouches[0].clientX;
+        const deltaX = swipeEndX - swipeStartX;
+        const deltaTime = Date.now() - swipeStartTime;
+        if (Math.abs(deltaX) > SWIPE_THRESHOLD && deltaTime < MAX_SWIPE_TIME) {
+            if (deltaX > 0 && currentIndex > 0) {
+                navigateToProject(currentIndex - 1);
+                HapticFeedbackManager.swipeGesture();
+            } else if (deltaX < 0 && currentIndex < APP_DATA.projects.length - 1) {
+                navigateToProject(currentIndex + 1);
+                HapticFeedbackManager.swipeGesture();
+            }
+        }
+        portfolioContainer.style.transform = '';
+        swipeStartX = 0;
+    }
+
+    function navigateToProject(index) {
+        const projectCard = portfolioContainer.children[index];
+        if (!projectCard) return;
+        currentIndex = index;
+        projectCard.scrollIntoView({ behavior: 'smooth', inline: 'start' });
+    }
+
+    function updateIndicators() {
+        if (!indicators) return;
+        const scrollLeft = portfolioContainer.scrollLeft;
+        const containerWidth = portfolioContainer.clientWidth;
+        currentIndex = Math.round(scrollLeft / containerWidth);
+        Array.from(indicators.children).forEach((dot, i) => {
+            dot.classList.toggle('active', i === currentIndex);
+        });
+    }
+
+    function isAtEdge() {
+        const scrollLeft = portfolioContainer.scrollLeft;
+        const maxScroll = portfolioContainer.scrollWidth - portfolioContainer.clientWidth;
+        return scrollLeft <= 0 || scrollLeft >= maxScroll;
+    }
+
+    return { init };
+})();
+
 const PortfolioManager = {
-    init() { this.populatePortfolio(); },
+    init() { 
+        this.populatePortfolio(); 
+        PortfolioSwipeManager.init();
+    },
     populatePortfolio() { const portfolioGrid = document.getElementById('portfolio-grid'); if (!portfolioGrid) return; portfolioGrid.innerHTML = APP_DATA.projects.map((project, index) => `<article class="project-card" data-aos="fade-up" data-aos-delay="${100 * (index + 1)}"><div class="project-image" style="background-image: url('${project.image}')"><span class="project-category">${project.category}</span></div><div class="project-content"><div class="project-header"><h3 class="project-title">${project.name}</h3><h4 class="project-subtitle">${project.title}</h4><p class="project-description">${project.description}</p></div><div class="project-meta"><div class="project-meta-item"><div class="project-meta-label">Duration</div><div class="project-meta-value">${project.duration}</div></div><div class="project-meta-item"><div class="project-meta-label">Team Size</div><div class="project-meta-value">${project.teamSize}</div></div></div><div class="project-technologies">${project.technologies.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}</div><div class="project-testimonial"><p class="project-testimonial-quote">"${project.testimonial}"</p><p class="project-testimonial-author">— ${project.client}</p></div><div class="project-actions"><button class="btn btn--primary btn--sm project-details-btn" data-project-id="${project.id}">View Details</button><button class="btn btn--outline btn--sm project-case-study-btn" data-project-id="${project.id}">Case Study</button></div></div></article>`).join(''); this.bindProjectEvents(); },
     bindProjectEvents() { document.addEventListener('click', (e) => { if (e.target.classList.contains('project-details-btn')) { const projectId = parseInt(e.target.getAttribute('data-project-id')); this.showProjectDetails(projectId); } if (e.target.classList.contains('project-case-study-btn')) { const projectId = parseInt(e.target.getAttribute('data-project-id')); this.showCaseStudy(projectId); } }); },
     showProjectDetails(projectId) { const project = APP_DATA.projects.find(p => p.id === projectId); if (!project) return; const details = `\n${project.name} - ${project.title}\n\n📋 PROJECT OVERVIEW:\n${project.description}\n\n✨ KEY FEATURES:\n${project.features.map(feature => `• ${feature}`).join('\n')}\n\n📊 RESULTS ACHIEVED:\n${project.results.map(result => `• ${result}`).join('\n')}\n\n🛠️ TECHNOLOGIES USED:\n${project.technologies.join(', ')}\n\n⏱️ Duration: ${project.duration}\n👥 Team Size: ${project.teamSize}\n📱 Category: ${project.category}\n    `; alert(details); },
@@ -528,10 +787,67 @@ const ContactForm = {
 };
 
 const ChatWidget = {
-    init() { this.bubble = document.getElementById('chat-bubble'); this.window = document.getElementById('chat-window'); this.closeButton = document.getElementById('close-chat'); this.input = document.getElementById('chat-input'); this.sendButton = document.getElementById('chat-send'); this.messages = document.getElementById('chat-messages'); if (!this.bubble || !this.window) return; this.bindEvents(); },
-    bindEvents() { this.bubble.addEventListener('click', (e) => { e.preventDefault(); this.window.classList.toggle('active'); if (this.window.classList.contains('active')) { setTimeout(() => this.input?.focus(), 100); } }); if (this.closeButton) { this.closeButton.addEventListener('click', (e) => { e.preventDefault(); this.window.classList.remove('active'); }); } if (this.sendButton) { this.sendButton.addEventListener('click', () => this.sendMessage()); } if (this.input) { this.input.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); this.sendMessage(); } }); } document.addEventListener('click', (e) => { if (!this.window.contains(e.target) && !this.bubble.contains(e.target)) { this.window.classList.remove('active'); } }); },
-    sendMessage() { if (!this.input) return; const message = this.input.value.trim(); if (!message) return; this.addMessage(message, 'user'); this.input.value = ''; setTimeout(() => { const responses = ["Thanks for reaching out! I'd be happy to help you learn more about our services. What specific area are you interested in?", "Great question! Let me connect you with one of our specialists who can provide detailed information about your project.", "I appreciate your interest in TechByte. Our team would love to discuss how we can help transform your business. Would you like to schedule a consultation?", "Thanks for contacting us! We specialize in cutting-edge solutions and would be excited to explore how we can help achieve your goals."]; const randomResponse = responses[Math.floor(Math.random() * responses.length)]; this.addMessage(randomResponse, 'bot'); }, 1000 + Math.random() * 2000); },
-    addMessage(text, sender) { if (!this.messages) return; const messageDiv = document.createElement('div'); messageDiv.className = `chat-message chat-message--${sender}`; const bubbleDiv = document.createElement('div'); bubbleDiv.className = 'chat-bubble'; bubbleDiv.textContent = text; messageDiv.appendChild(bubbleDiv); this.messages.appendChild(messageDiv); this.messages.scrollTop = this.messages.scrollHeight; }
+    init() {
+        this.bubble = document.getElementById('chat-bubble');
+        this.window = document.getElementById('chat-window');
+        this.closeButton = document.getElementById('close-chat');
+        this.input = document.getElementById('chat-input');
+        this.sendButton = document.getElementById('chat-send');
+        this.messages = document.getElementById('chat-messages');
+        if (!this.bubble || !this.window) return;
+        this.bindEvents();
+    },
+    bindEvents() {
+        this.bubble.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.window.classList.toggle('active');
+            if (this.window.classList.contains('active')) {
+                setTimeout(() => this.input?.focus(), 100);
+            }
+        });
+        if (this.closeButton) {
+            this.closeButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.window.classList.remove('active');
+            });
+        }
+        if (this.sendButton) {
+            this.sendButton.addEventListener('click', () => this.sendMessage());
+        }
+        if (this.input) {
+            this.input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); this.sendMessage(); }
+            });
+        }
+        document.addEventListener('click', (e) => {
+            if (!this.window.contains(e.target) && !this.bubble.contains(e.target)) {
+                this.window.classList.remove('active');
+            }
+        });
+    },
+    sendMessage() {
+        if (!this.input) return;
+        const message = this.input.value.trim();
+        if (!message) return;
+        this.addMessage(message, 'user');
+        this.input.value = '';
+        setTimeout(() => {
+            const responses = ["Thanks for reaching out! I'd be happy to help you learn more about our services. What specific area are you interested in?", "Great question! Let me connect you with one of our specialists who can provide detailed information about your project.", "I appreciate your interest in TechByte. Our team would love to discuss how we can help transform your business. Would you like to schedule a consultation?", "Thanks for contacting us! We specialize in cutting-edge solutions and would be excited to explore how we can help achieve your goals."];
+            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+            this.addMessage(randomResponse, 'bot');
+        }, 1000 + Math.random() * 2000);
+    },
+    addMessage(text, sender) {
+        if (!this.messages) return;
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chat-message chat-message--${sender}`;
+        const bubbleDiv = document.createElement('div');
+        bubbleDiv.className = 'chat-bubble';
+        bubbleDiv.textContent = text;
+        messageDiv.appendChild(bubbleDiv);
+        this.messages.appendChild(messageDiv);
+        this.messages.scrollTop = this.messages.scrollHeight;
+    }
 };
 
 const ScrollToTop = {
@@ -555,72 +871,138 @@ const AccessibilityEnhancements = {
 };
 
 // ==========================================================================
+// NEW: MODAL MANAGER
+// ==========================================================================
+const ModalManager = {
+    init() {
+        document.addEventListener('click', (e) => {
+            const trigger = e.target.closest('[data-modal]');
+            if (trigger) {
+                const modalId = trigger.dataset.modal;
+                this.openModal(modalId);
+            }
+        });
+    },
+    openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        HapticFeedbackManager.mediumTap();
+        modal.classList.add('active');
+        document.body.classList.add('no-scroll');
+        const closeBtn = modal.querySelector('.modal-close');
+        const closeModal = () => {
+            modal.classList.remove('active');
+            document.body.classList.remove('no-scroll');
+        };
+        if (closeBtn) closeBtn.addEventListener('click', closeModal, { once: true });
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        }, { once: true });
+    }
+};
+
+// ==========================================================================
+// NEW: IMAGE GALLERY MANAGER
+// ==========================================================================
+const ImageGalleryManager = {
+    init() {
+        const partnersSection = document.getElementById('partners');
+        if (!partnersSection) return;
+        partnersSection.addEventListener('click', (e) => {
+            const img = e.target.closest('img.lazy');
+            if (img) this.openGallery(img);
+        });
+    },
+    openGallery(img) {
+        HapticFeedbackManager.lightTap();
+        const overlay = document.createElement('div');
+        overlay.className = 'mobile-gallery-overlay';
+        overlay.style.display = 'flex';
+        overlay.innerHTML = `
+            <div class="gallery-container">
+                <img class="gallery-image" src="${img.dataset.src || img.src}" alt="${img.alt}" />
+            </div>
+            <button class="gallery-close" aria-label="Close gallery">×</button>
+        `;
+        document.body.appendChild(overlay);
+        document.body.classList.add('no-scroll');
+        const close = () => {
+            document.body.removeChild(overlay);
+            document.body.classList.remove('no-scroll');
+        };
+        overlay.querySelector('.gallery-close').addEventListener('click', close);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) close();
+        });
+    }
+};
+
+
+// ==========================================================================
 // APPLICATION INITIALIZATION
 // ==========================================================================
 class TechByteApp {
     constructor() {
         this.modules = [
-            LoadingScreen,
-            ScrollProgress,
-            Navigation,
-            ServicesManager,
-            PortfolioManager,
-            TeamManager,
-            TestimonialsSlider,
-            FAQ,
-            ContactForm,
-            ChatWidget,
-            ScrollToTop,
-            LogoScroller,
-            PerformanceMonitor,
-            AccessibilityEnhancements
+            LoadingScreen, ScrollProgress, Navigation, ServicesManager, PortfolioManager,
+            TeamManager, TestimonialsSlider, FAQ, ContactForm, ChatWidget, ScrollToTop,
+            HapticFeedbackManager, PullToRefreshManager, LogoScroller, PerformanceMonitor,
+            AccessibilityEnhancements, ModalManager, ImageGalleryManager
         ];
     }
 
     init() {
         console.log('Initializing TechByte App...');
-
         if (window.AOS) {
-            AOS.init({
-                duration: 800,
-                once: true,
-                offset: 100,
-                disable: function() {
-                    return window.innerWidth < 768;
-                }
-            });
+            AOS.init({ duration: 800, once: true, offset: 100, disable: () => window.innerWidth < 768 });
         }
-
         if (window.innerWidth > 768) {
             this.modules.push(ThreeDBackground);
         } else {
             const canvas = document.getElementById('hero-canvas');
             if (canvas) canvas.style.display = 'none';
         }
-
         this.modules.forEach(module => {
             try {
                 if (module && typeof module.init === 'function') {
-                    const moduleName = 'object'
-                    console.log(`Initializing ${moduleName}...`);
                     module.init();
                 }
             } catch (error) {
-                const moduleName = 'object'
+                const moduleName = module.name || module.constructor.name || 'Module';
                 console.warn(`Failed to initialize ${moduleName}:`, error);
             }
         });
-
         this.setupErrorHandling();
+        if (window.ServiceWorkerManager) window.ServiceWorkerManager.register();
+        if (window.PWAInstallManager) window.PWAInstallManager.init();
         console.log('TechByte App initialized successfully');
     }
-
+    
     setupErrorHandling() {
-        window.addEventListener('error', (e) => {
-            console.error('JavaScript error:', e.error);
-        });
-        window.addEventListener('unhandledrejection', (e) => {
-            console.error('Unhandled promise rejection:', e.reason);
+        window.addEventListener('error', (e) => console.error('JavaScript error:', e.error));
+        window.addEventListener('unhandledrejection', (e) => console.error('Unhandled promise rejection:', e.reason));
+    }
+}
+
+function lazyLoadImages() {
+    const lazyImages = document.querySelectorAll('img.lazy');
+    if ('IntersectionObserver' in window) {
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.src = img.dataset.src;
+                    img.classList.remove('lazy');
+                    observer.unobserve(img);
+                }
+            });
+        }, { rootMargin: '50px 0px', threshold: 0.01 });
+        lazyImages.forEach(img => imageObserver.observe(img));
+    } else {
+        // Fallback
+        lazyImages.forEach(img => {
+            img.src = img.dataset.src;
+            img.classList.remove('lazy');
         });
     }
 }
@@ -632,11 +1014,10 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         const app = new TechByteApp();
         app.init();
+        lazyLoadImages();
     });
 } else {
     const app = new TechByteApp();
     app.init();
+    lazyLoadImages();
 }
-
-window.TechByteApp = TechByteApp;
-window.PortfolioManager = PortfolioManager;
