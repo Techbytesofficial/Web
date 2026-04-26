@@ -411,40 +411,51 @@
         </section>
     </main>
 
-    <!-- Footer -->
-    <footer class="site-footer" role="contentinfo">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-brand">
-                    <h3 class="footer-logo"><span class="logo-highlight">Tech</span>Byte</h3>
-                    <p class="footer-tagline">Innovating Tomorrow's Technology</p>
-                </div>
-                <div class="footer-links">
-                    <div class="footer-column">
-                        <h4>Services</h4>
-                        <ul>
-                            <li><a href="#services">Web Development</a></li>
-                            <li><a href="#services">Mobile Apps</a></li>
-                            <li><a href="#services">AI Solutions</a></li>
-                            <li><a href="#services">Cloud Services</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-column">
-                        <h4>Company</h4>
-                        <ul>
-                            <li><a href="#about">About Us</a></li>
-                            <li><a href="#team">Our Team</a></li>
-                            <li><a href="#portfolio">Portfolio</a></li>
-                            <li><a href="#contact">Contact</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p class="footer-text">&copy; 2025 TechByte. All Rights Reserved.</p>
-            </div>
-        </div>
-    </footer>
+    <form class="contact-form" id="contact-form" data-aos="fade-up" data-aos-delay="300" novalidate>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name" class="form-label">Your Name</label>
+                                <input type="text" id="name" name="name" class="form-control" required>
+                                <div class="form-error" id="name-error"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email" class="form-label">Your Email</label>
+                                <input type="email" id="email" name="email" class="form-control" required>
+                                <div class="form-error" id="email-error"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="service" class="form-label">Service Interested In</label>
+                            <select id="service" name="service" class="form-control" required>
+                                <option value="">Select a service</option>
+                                <option value="web-development">Web Development</option>
+                                <option value="mobile-app-development">Mobile App Development</option>
+                                <option value="ai-machine-learning">AI & Machine Learning</option>
+                                <option value="cloud-solutions">Cloud Solutions</option>
+                                <option value="ui-ux-design">UI/UX Design</option>
+                                <option value="digital-transformation">Digital Transformation</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <div class="form-error" id="service-error"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="message" class="form-label">Project Details</label>
+                            <textarea id="message" name="message" rows="5" class="form-control" placeholder="Tell us about your project requirements, timeline, and goals..." required></textarea>
+                            <div class="form-error" id="message-error"></div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn--primary btn--full-width" id="submit-button">
+                            <span class="button-text">Send Message</span>
+                            <span class="button-loading hidden">Sending...</span>
+                        </button>
+                        
+                        <div class="form-success hidden" id="form-success">
+                            <p>Thank you! Your message has been sent successfully. We'll get back to you within 24 hours.</p>
+                        </div>
+                    </form>
 
     <!-- Chat Widget -->
     <div id="chat-widget" class="chat-widget">
