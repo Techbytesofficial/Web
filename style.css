@@ -1713,7 +1713,9 @@ select.form-control {
 /* ==========================================================================
    FOOTER
    ========================================================================== */
-
+.form-control::placeholder {
+  color: #6b7280; /* soft gray */
+}
 .site-footer {
   background: #0F172A;
   padding: var(--space-32) 0 var(--space-24);
