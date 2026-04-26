@@ -1608,10 +1608,13 @@ select.form-control {
 /* ==========================================================================
    CONTACT SECTION
    ========================================================================== */
-.contact-content .contact-form {
-  background: #ffffff; /* force white */
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+
+.contact-content {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: var(--space-32);
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 .contact-info { display: flex; flex-direction: column; gap: var(--space-24); }
