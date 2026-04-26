@@ -1719,6 +1719,16 @@ select.form-control {
 .contact-form p {
   color: #111827; /* dark black/gray */
 }
+select.form-control {
+  color: #111827;
+}
+.form-control {
+  color: #111827;
+}
+
+.form-control::placeholder {
+  color: #6b7280; /* soft gray */
+}
 .site-footer {
   background: #0F172A;
   padding: var(--space-32) 0 var(--space-24);
