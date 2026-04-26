@@ -1713,8 +1713,11 @@ select.form-control {
 /* ==========================================================================
    FOOTER
    ========================================================================== */
-.form-control::placeholder {
-  color: #6b7280; /* soft gray */
+.contact-form,
+.contact-form label,
+.contact-form h4,
+.contact-form p {
+  color: #111827; /* dark black/gray */
 }
 .site-footer {
   background: #0F172A;
